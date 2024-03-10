@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require("cors");
 const mongoose = require('mongoose');
+const nodemailer = require("nodemailer");
 
 const app = express();
 const port = 8000;
@@ -27,7 +28,7 @@ const studentScoreSchema = new mongoose.Schema({
     score: Number
   });
   
-  const StudentScore = mongoose.model('Student-Score', studentScoreSchema);
+const StudentScore = mongoose.model('Student-Score', studentScoreSchema);
 
 // Express middleware
 app.use(bodyParser.json());
@@ -63,6 +64,7 @@ app.post('/register', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 // Route to handle login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -91,7 +93,7 @@ app.post('/login', async (req, res) => {
     }
   });
   
-  // Route to receive score data and update the database
+// Route to receive score data and update the database
 app.post('/update-score', async (req, res) => {
     const { username, score } = req.body;
   
@@ -104,6 +106,41 @@ app.post('/update-score', async (req, res) => {
       res.status(500).send('Internal server error');
     }
   });
+
+// Route to send email with the score
+app.post('/send-email', async (req, res) => {
+  const { username, score, email } = req.body;
+
+  console.log(email)
+
+  // Configure transporter
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'dobby525252@gmail.com', // Your Gmail email address
+      pass: 'qtwf boca gmui dabj' // Your Gmail password
+    }
+  });
+
+  // Email message
+  const mailOptions = {
+    from: 'dobby525252@gmail.com', // Sender's email address
+    to: email, // Recipient's email address (retrieved from the request)
+    subject: 'Quiz Result', // Subject of the email
+    text: `Congratulations, ${username}!\nYour total score is: ${score}` // Email content
+  };
+
+  // Send email
+  transporter.sendMail(mailOptions, function(error, info) {
+    if (error) {
+      console.error('Error sending email:', error);
+      res.status(500).send('Internal server error');
+    } else {
+      console.log('Email sent:', info.response);
+      res.status(200).send('Email sent successfully');
+    }
+  });
+});
 
 // Start the server
 app.listen(port, () => {
