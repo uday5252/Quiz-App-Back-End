@@ -37,6 +37,7 @@ app.use(cors());
 
 // Route to handle form submission
 app.post('/register', async (req, res) => {
+  console.log("hi")
   const { name, email, password, confirmPassword } = req.body;
 
   // Check if password and confirmPassword match
